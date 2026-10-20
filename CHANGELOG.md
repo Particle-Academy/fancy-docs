@@ -9,6 +9,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-20
+
+### Added
+
+- **Charts.** last-word 0.10 writes a native `chart` block whose `option` is an
+  ECharts option (the same field dark-slide charts take); `DocViewer` draws it
+  with fancy-echarts, sized as the writer sizes it (`widthPx` / `heightPx`, a
+  `width` percentage of the column, or the full column at 0.6 of its width).
+  Drawn as Word draws the file by default: last-word's (Office's) palette,
+  legend under the plot, values above a bar or point (past the end of a
+  horizontal bar), axis titles centred and kept clear of the axis labels. An
+  option that sets any of these keeps its own. A chart with no series is
+  skipped rather than drawn as an empty box. Checked beside LibreOffice's
+  render of a seven-chart last-word document.
+- **`@particle-academy/fancy-echarts` is an OPTIONAL peer** (`>=6.1.0 <7.0.0`),
+  loaded only when a document has a chart. Without it a chart shows a labelled
+  placeholder instead of failing. **What to do:** install it if your documents
+  have charts.
+
+### Known
+
+- A chart's `numberFormat` (an Excel format) is not applied to its labels yet:
+  a value Word shows as `172` shows as `171.5`.
+
 ## [0.1.0] - 2026-10-19
 
 ### Added

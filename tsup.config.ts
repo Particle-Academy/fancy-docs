@@ -6,6 +6,6 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  external: ["react", "react-dom", "@particle-academy/react-fancy"],
+  external: ["react", "react-dom", "@particle-academy/react-fancy", "@particle-academy/fancy-echarts"],
   treeshake: true,
 });

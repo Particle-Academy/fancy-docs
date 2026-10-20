@@ -2,6 +2,7 @@ import { Fragment, type CSSProperties, type ReactNode } from "react";
 import { FauxClient, sanitizeHref, type FauxClientProps } from "@particle-academy/react-fancy";
 import type { Band, Block, Doc, ListItem, Run, TableBorders, TableCell } from "./types";
 import { borderCss, boxBorders, DEFAULTS, fontStack, hex, num, padding, PAGE_SIZES, paragraphCss, runCss } from "./style";
+import { ChartBlock, isPlottable } from "./ChartBlock";
 
 export interface DocViewerProps {
   /** A last-word document, as its readers return it. */
@@ -254,6 +255,9 @@ function BlockView({ block }: { block: Block }): ReactNode {
         />
       );
     }
+    case "chart":
+      // An option with no series draws an empty box; skip it rather than show one.
+      return isPlottable(block) ? <ChartBlock block={block} /> : null;
     case "hr":
       return <hr data-fancy-docs-block="hr" style={{ border: 0, borderTop: "0.5pt solid #000000", margin: `0 0 ${DEFAULTS.spaceAfter}pt` }} />;
     default:

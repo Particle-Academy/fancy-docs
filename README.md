@@ -60,6 +60,7 @@ registerOfficeViewer("docx", DocFileView, { read: (bytes) => new DocxReader().re
 | Headings | levels 1–6 at the writer's sizes |
 | Lists | ordered and bulleted, nested |
 | Tables | column widths, table width and alignment, borders (including removed ones), header rows and their default fill, cell fills, padding, vertical alignment, row and column spans |
+| Charts | last-word's `chart` block (bar, column, line, pie; an ECharts option), drawn with `@particle-academy/fancy-echarts`, an optional peer: install it if your documents have charts |
 | Also | code blocks, quotes, rules, embedded images |
 
 An unstyled document gets the writer's own defaults (Calibri 11pt, 8pt after

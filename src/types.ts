@@ -99,7 +99,18 @@ export type Block =
   | { type: "quote"; blocks: Block[] }
   | { type: "image"; src: string; widthPx?: number; heightPx?: number; alt?: string }
   | { type: "pageBreak" }
-  | { type: "hr" };
+  | { type: "hr" }
+  | {
+      type: "chart";
+      /** An Apache ECharts option, as last-word 0.10 writes it (the same field dark-slide charts take). */
+      option: Record<string, unknown>;
+      widthPx?: number;
+      heightPx?: number;
+      /** Percentage of the text column. */
+      width?: number;
+      numberFormat?: string;
+      alt?: string;
+    };
 
 /** A running header or footer: three slots; `{page}` and `{pages}` are filled in. */
 export interface Band {

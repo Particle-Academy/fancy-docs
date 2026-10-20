@@ -1,6 +1,6 @@
 {
   "name": "@particle-academy/fancy-docs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Render a last-word document (docx) the way Word does: run, paragraph, table and cell styling, header and footer bands, in react-fancy's FauxClient frame",
   "repository": {
     "type": "git",
@@ -40,9 +40,11 @@
   "peerDependencies": {
     "@particle-academy/react-fancy": ">=5.49.1 <6.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "@particle-academy/fancy-echarts": ">=6.1.0 <7.0.0"
   },
   "devDependencies": {
+    "@particle-academy/fancy-echarts": "^6.1.0",
     "@particle-academy/react-fancy": "^5.49.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
@@ -67,5 +69,10 @@
   "sideEffects": false,
   "engines": {
     "node": ">=22"
+  },
+  "peerDependenciesMeta": {
+    "@particle-academy/fancy-echarts": {
+      "optional": true
+    }
   }
 }
