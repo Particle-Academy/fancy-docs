@@ -1,0 +1,71 @@
+{
+  "name": "@particle-academy/fancy-docs",
+  "version": "0.1.0",
+  "description": "Render a last-word document (docx) the way Word does: run, paragraph, table and cell styling, header and footer bands, in react-fancy's FauxClient frame",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Particle-Academy/fancy-docs.git"
+  },
+  "homepage": "https://github.com/Particle-Academy/fancy-docs#readme",
+  "bugs": "https://github.com/Particle-Academy/fancy-docs/issues",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "tsc --noEmit && eslint .",
+    "test": "vitest run",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "tsup"
+  },
+  "peerDependencies": {
+    "@particle-academy/react-fancy": ">=5.49.1 <6.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@particle-academy/react-fancy": "^5.49.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "eslint": "^10.8.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "jsdom": "^30.0.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.65.0",
+    "vitest": "^4.1.11"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1",
+    "source-map-js": "^1.2.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  }
+}
