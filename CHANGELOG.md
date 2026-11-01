@@ -9,6 +9,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-01
+
+### Changed
+
+- **The `@particle-academy/react-fancy` peer range now also accepts 6.x** (`>=5.49.1 <6.0.0` to `>=5.49.1 <7.0.0`). react-fancy 6.0.0 makes `Button` default to `type="button"` instead of submitting an enclosing form (Change Council CC-fancy-0003). Audited for that: it renders no react-fancy `Button` and no form. No `Button` needed `type="submit"` and no `PromptInput` is used, so the package behaves the same on 5 and 6. The devDependency moved to `^6.0.0`, so this package's own suite, typecheck and build now run against 6. Widening only adds candidates, so the react-fancy you already have still resolves. **Consumer action:** none on react-fancy 5; on react-fancy 6 it works as-is.
+
 ## [0.2.0] - 2026-10-20
 
 ### Added
