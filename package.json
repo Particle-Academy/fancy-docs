@@ -1,6 +1,6 @@
 {
   "name": "@particle-academy/fancy-docs",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Render a last-word document (docx) the way Word does: run, paragraph, table and cell styling, header and footer bands, in react-fancy's FauxClient frame",
   "repository": {
     "type": "git",
