@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-04
+
 ### Added
 
 - **Mixed page orientation.** A `pageBreak` carrying `page` changes the page from there on: each sheet is drawn at the page in force there. `margins` merge side by side and every other key is replaced whole. `{"type": "pageBreak", "page": {}}` is a new sheet with nothing changed.
