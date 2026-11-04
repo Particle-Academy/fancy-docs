@@ -98,7 +98,7 @@ export type Block =
   | { type: "code"; language?: string; text: string }
   | { type: "quote"; blocks: Block[] }
   | { type: "image"; src: string; widthPx?: number; heightPx?: number; alt?: string }
-  | { type: "pageBreak" }
+  | { type: "pageBreak"; page?: Page }
   | { type: "hr" }
   | {
       type: "chart";

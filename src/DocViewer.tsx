@@ -1,7 +1,7 @@
 import { Fragment, type CSSProperties, type ReactNode } from "react";
 import { Callout, FauxClient, sanitizeHref, type FauxClientProps } from "@particle-academy/react-fancy";
-import { asksForMixedLayout, LAYOUT_NOTICE } from "./layout-notice";
-import type { Band, Block, Doc, ListItem, Run, TableBorders, TableCell } from "./types";
+import { asksForMixedLayout, isPageObject, LAYOUT_NOTICE } from "./layout-notice";
+import type { Band, Block, Doc, ListItem, Run, TableBorders, TableCell, Page } from "./types";
 import { borderCss, boxBorders, DEFAULTS, fontStack, hex, num, padding, PAGE_SIZES, paragraphCss, runCss } from "./style";
 import { ChartBlock, isPlottable } from "./ChartBlock";
 
@@ -32,7 +32,7 @@ export interface DocViewerProps {
  * is a tracking pixel waiting to fire), and colours must be `#RRGGBB`.
  */
 export function DocViewer({ doc, frame = true, frameProps, className }: DocViewerProps) {
-  const pages = splitPages(Array.isArray(doc?.blocks) ? doc.blocks : []);
+  const pages = splitPages(doc);
   const total = pages.length;
 
   const gutter = (
@@ -41,8 +41,8 @@ export function DocViewer({ doc, frame = true, frameProps, className }: DocViewe
       className={className}
       style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: 16, background: "#E5E7EB" }}
     >
-      {pages.map((blocks, i) => (
-        <PageSheet key={i} doc={doc} blocks={blocks} number={i + 1} total={total} />
+      {pages.map((sheet, i) => (
+        <PageSheet key={i} doc={doc} page={sheet.page} blocks={sheet.blocks} number={i + 1} total={total} />
       ))}
     </div>
   );
@@ -69,7 +69,7 @@ export function DocViewer({ doc, frame = true, frameProps, className }: DocViewe
       variant="device"
       controls
       fill
-      width={logicalWidth(doc)}
+      width={logicalWidth(pages)}
       scale="fit"
       bodyClassName="overflow-auto"
       {...frameProps}
@@ -79,26 +79,59 @@ export function DocViewer({ doc, frame = true, frameProps, className }: DocViewe
   );
 }
 
-/** The sheets' width in CSS pixels, gutter included: the frame's logical width. */
-function logicalWidth(doc: Doc): number {
-  const page = doc?.page ?? {};
-  const [w, h] = PAGE_SIZES[page.size ?? "letter"] ?? PAGE_SIZES.letter;
-  const width = page.orientation === "landscape" ? h : w;
-  return Math.ceil((width * 4) / 3) + 32;
+/** The widest sheet's width in CSS pixels, gutter included: the frame's logical width. */
+function logicalWidth(pages: Sheet[]): number {
+  const widths = pages.map(({ page }) => {
+    const [w, h] = PAGE_SIZES[page.size ?? "letter"] ?? PAGE_SIZES.letter;
+    return page.orientation === "landscape" ? h : w;
+  });
+  return Math.ceil((Math.max(...widths) * 4) / 3) + 32;
 }
 
-/** Page breaks split the flow into sheets; an empty document is one blank sheet. */
-function splitPages(blocks: Block[]): Block[][] {
-  const pages: Block[][] = [[]];
-  for (const block of blocks) {
-    if (block?.type === "pageBreak") pages.push([]);
-    else pages[pages.length - 1].push(block);
+interface Sheet {
+  page: Page;
+  blocks: Block[];
+}
+
+/**
+ * A break's `page` over the page before it: margins side by side, every other key
+ * replaced whole. The same reading as last-word's `Schema.stretches()`.
+ */
+function mergePage(page: Page, change: Record<string, unknown>): Page {
+  const out: Record<string, unknown> = { ...page };
+  delete out.firstHeader;
+  delete out.firstFooter;
+  for (const [key, value] of Object.entries(change)) {
+    if (value === undefined || value === null || key === "background") continue;
+    const margins = out.margins;
+    if (key === "margins" && typeof value === "object" && typeof margins === "object" && margins !== null) {
+      out.margins = { ...margins, ...value };
+    } else {
+      out[key] = value;
+    }
+  }
+  return out as Page;
+}
+
+/**
+ * Page breaks split the flow into sheets, each at the page in force there; an empty
+ * document is one blank sheet.
+ */
+function splitPages(doc: Doc): Sheet[] {
+  let page: Page = doc?.page ?? {};
+  const pages: Sheet[] = [{ page, blocks: [] }];
+  for (const block of Array.isArray(doc?.blocks) ? doc.blocks : []) {
+    if (block?.type === "pageBreak") {
+      if (isPageObject(block.page)) page = mergePage(page, Array.isArray(block.page) ? {} : (block.page as Record<string, unknown>));
+      pages.push({ page, blocks: [] });
+    } else {
+      pages[pages.length - 1].blocks.push(block);
+    }
   }
   return pages;
 }
 
-function PageSheet({ doc, blocks, number, total }: { doc: Doc; blocks: Block[]; number: number; total: number }) {
-  const page = doc.page ?? {};
+function PageSheet({ doc, page, blocks, number, total }: { doc: Doc; page: Page; blocks: Block[]; number: number; total: number }) {
   const [w, h] = PAGE_SIZES[page.size ?? "letter"] ?? PAGE_SIZES.letter;
   const [width, height] = page.orientation === "landscape" ? [h, w] : [w, h];
   const m = page.margins ?? {};

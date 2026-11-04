@@ -9,6 +9,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Mixed page orientation.** A `pageBreak` carrying `page` changes the page from there on: each sheet is drawn at the page in force there. `margins` merge side by side and every other key is replaced whole. `{"type": "pageBreak", "page": {}}` is a new sheet with nothing changed.
+
+### Changed
+
+- The notice no longer fires for a `page` on a top-level break. It still fires for what the writers refuse (a nested `page`, a background on a break, page keys straight on a break, a top-level `sections`), in new words. **Consumer action:** none, unless you compared `LAYOUT_NOTICE`'s text.
+
 ## [0.3.0] - 2026-11-03
 
 **What you must do: nothing.** A document with one page setup draws exactly as

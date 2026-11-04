@@ -282,12 +282,12 @@ describe("DocFileView", () => {
   });
 });
 
-describe("mixed page orientation, not shown yet", () => {
+describe("page settings set where they don't apply", () => {
   const para = (text: string) => ({ type: "paragraph", runs: [{ text }] });
   const notice = (host: HTMLElement) => host.querySelector<HTMLElement>("[data-fancy-docs-layout-notice]");
-  const withPage = { blocks: [para("one"), { type: "pageBreak", page: { orientation: "landscape" } }, para("two")] };
+  const withPage = { blocks: [para("one"), { type: "pageBreak", orientation: "landscape" }, para("two")] };
   const WORDS =
-    "Mixed page orientation isn't shown yet. This document asks for different page settings partway through; every page here uses the document's one page setup.";
+    "Some page settings in this document aren't shown. It sets them somewhere they don't apply: on a page break directly, in a quote or a table cell, or under a sections key.";
 
   it("exports the words last-word-ui uses", () => {
     expect(LAYOUT_NOTICE).toBe(WORDS);
@@ -301,8 +301,7 @@ describe("mixed page orientation, not shown yet", () => {
   });
 
   it.each([
-    ["pageBreak.page", withPage],
-    ["pageBreak.page, empty", { blocks: [para("one"), { type: "pageBreak", page: {} }, para("two")] }],
+    ["a background on a break", { blocks: [para("one"), { type: "pageBreak", page: { background: "#FFFFFF" } }, para("two")] }],
     ["a near-miss key", { blocks: [para("one"), { type: "pageBreak", margins: { left: 10 } }, para("two")] }],
     ["top-level sections", { sections: [{}], blocks: [para("one"), { type: "pageBreak" }, para("two")] }],
     ["nested in a quote", { blocks: [{ type: "quote", blocks: [{ type: "pageBreak", page: {} }] }, para("one"), { type: "pageBreak" }, para("two")] }],
@@ -341,5 +340,46 @@ describe("mixed page orientation, not shown yet", () => {
 
     expect(notice(host)).not.toBeNull();
     expect(host.querySelector("[data-fancy-docs-viewer]")!.className).toBe("mine");
+  });
+});
+
+describe("mixed page orientation", () => {
+  const para = (text: string) => ({ type: "paragraph", runs: [{ text }] });
+  const sheets = (host: HTMLElement) => Array.from(host.querySelectorAll<HTMLElement>("[data-fancy-docs-page]"));
+  const doc = {
+    page: { margins: { top: 10, left: 20 }, footer: { left: "f" } },
+    blocks: [
+      para("one"),
+      { type: "pageBreak", page: { orientation: "landscape", margins: { left: 30 } } },
+      para("two"),
+      { type: "pageBreak" },
+      para("three"),
+      { type: "pageBreak", page: { orientation: "portrait", footer: { left: "g" } } },
+      para("four"),
+    ],
+  };
+
+  it("draws each sheet at the page in force there, and says nothing", () => {
+    const host = mount(<DocViewer frame={false} doc={doc as never} />);
+    const all = sheets(host);
+    expect(all.map((s) => s.style.width)).toEqual(["612pt", "792pt", "792pt", "612pt"]);
+    expect(host.querySelector("[data-fancy-docs-layout-notice]")).toBeNull();
+  });
+
+  it("merges margins side by side and replaces a band whole", () => {
+    const host = mount(<DocViewer frame={false} doc={doc as never} />);
+    const body = sheets(host)[1]!.querySelector<HTMLElement>("[data-fancy-docs-body]")!;
+    expect(body.style.paddingTop).toBe("10pt");
+    expect(body.style.paddingLeft).toBe("30pt");
+    expect(sheets(host)[2]!.textContent).toContain("f");
+    expect(sheets(host)[3]!.querySelector('[data-fancy-docs-band="footer"]')!.textContent).toBe("g");
+  });
+
+  it("takes an empty page, as {} or PHP's [], as a new sheet with nothing changed", () => {
+    for (const page of [{}, []]) {
+      const host = mount(<DocViewer frame={false} doc={{ blocks: [para("a"), { type: "pageBreak", page }, para("b")] } as never} />);
+      expect(sheets(host).map((s) => s.style.width)).toEqual(["612pt", "612pt"]);
+      expect(host.querySelector("[data-fancy-docs-layout-notice]")).toBeNull();
+    }
   });
 });
