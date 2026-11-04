@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { act, type ReactElement } from "react";
 import { createRoot } from "react-dom/client";
-import { DocViewer, DocFileView } from "../src";
+import { DocViewer, DocFileView, LAYOUT_NOTICE } from "../src";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -279,5 +279,67 @@ describe("DocFileView", () => {
     const bad = mount(<DocFileView document={{ nope: true }} filename="r.docx" />);
     expect(bad.querySelector("[data-fancy-docs-page]")).toBeNull();
     expect(bad.textContent).toContain("r.docx");
+  });
+});
+
+describe("mixed page orientation, not shown yet", () => {
+  const para = (text: string) => ({ type: "paragraph", runs: [{ text }] });
+  const notice = (host: HTMLElement) => host.querySelector<HTMLElement>("[data-fancy-docs-layout-notice]");
+  const withPage = { blocks: [para("one"), { type: "pageBreak", page: { orientation: "landscape" } }, para("two")] };
+  const WORDS =
+    "Mixed page orientation isn't shown yet. This document asks for different page settings partway through; every page here uses the document's one page setup.";
+
+  it("exports the words last-word-ui uses", () => {
+    expect(LAYOUT_NOTICE).toBe(WORDS);
+  });
+
+  it("draws no notice for a document with one page setup", () => {
+    const host = mount(<DocViewer frame={false} doc={{ page: { orientation: "landscape" }, blocks: [para("one"), { type: "pageBreak" }, para("two")] } as never} />);
+    expect(notice(host)).toBeNull();
+    expect(host.querySelector("[data-react-fancy-callout]")).toBeNull();
+    expect(page(host).length).toBe(2);
+  });
+
+  it.each([
+    ["pageBreak.page", withPage],
+    ["pageBreak.page, empty", { blocks: [para("one"), { type: "pageBreak", page: {} }, para("two")] }],
+    ["a near-miss key", { blocks: [para("one"), { type: "pageBreak", margins: { left: 10 } }, para("two")] }],
+    ["top-level sections", { sections: [{}], blocks: [para("one"), { type: "pageBreak" }, para("two")] }],
+    ["nested in a quote", { blocks: [{ type: "quote", blocks: [{ type: "pageBreak", page: {} }] }, para("one"), { type: "pageBreak" }, para("two")] }],
+    [
+      "nested in a table cell",
+      { blocks: [{ type: "table", rows: [{ cells: [{ blocks: [{ type: "pageBreak", orientation: "landscape" }] }] }] }, para("one"), { type: "pageBreak" }, para("two")] },
+    ],
+  ])("keeps drawing with a visible notice: %s", (_name, doc) => {
+    const host = mount(<DocViewer frame={false} doc={doc as never} />);
+
+    expect(notice(host)?.textContent).toBe(WORDS);
+    const sheets = page(host);
+    expect(sheets.length).toBe(2);
+    expect(sheets[0]!.textContent).toContain("one");
+    expect(sheets[1]!.textContent).toContain("two");
+  });
+
+  it("is a react-fancy Callout, styled for both light and dark", () => {
+    const host = mount(<DocViewer frame={false} doc={withPage as never} />);
+    const callout = notice(host)!.querySelector<HTMLElement>("[data-react-fancy-callout]")!;
+
+    expect(callout.getAttribute("role")).toBe("alert");
+    expect(callout.className).toContain("bg-amber-50");
+    expect(callout.className).toContain("dark:bg-amber-950/50");
+    expect(callout.className).toContain("dark:text-amber-100");
+  });
+
+  it("sits on the host's surface, not the always-light gutter, where its dark colours would wash out", () => {
+    const host = mount(<DocViewer frame={false} doc={withPage as never} />);
+
+    expect(notice(host)!.closest("[data-fancy-docs-viewer]")).toBeNull();
+  });
+
+  it("shows inside the frame too, and leaves the viewer's own root where it was", () => {
+    const host = mount(<DocViewer doc={withPage as never} className="mine" />);
+
+    expect(notice(host)).not.toBeNull();
+    expect(host.querySelector("[data-fancy-docs-viewer]")!.className).toBe("mine");
   });
 });

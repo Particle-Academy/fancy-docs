@@ -1,5 +1,6 @@
 import { Fragment, type CSSProperties, type ReactNode } from "react";
-import { FauxClient, sanitizeHref, type FauxClientProps } from "@particle-academy/react-fancy";
+import { Callout, FauxClient, sanitizeHref, type FauxClientProps } from "@particle-academy/react-fancy";
+import { asksForMixedLayout, LAYOUT_NOTICE } from "./layout-notice";
 import type { Band, Block, Doc, ListItem, Run, TableBorders, TableCell } from "./types";
 import { borderCss, boxBorders, DEFAULTS, fontStack, hex, num, padding, PAGE_SIZES, paragraphCss, runCss } from "./style";
 import { ChartBlock, isPlottable } from "./ChartBlock";
@@ -34,7 +35,7 @@ export function DocViewer({ doc, frame = true, frameProps, className }: DocViewe
   const pages = splitPages(Array.isArray(doc?.blocks) ? doc.blocks : []);
   const total = pages.length;
 
-  const sheets = (
+  const gutter = (
     <div
       data-fancy-docs-viewer=""
       className={className}
@@ -44,6 +45,19 @@ export function DocViewer({ doc, frame = true, frameProps, className }: DocViewe
         <PageSheet key={i} doc={doc} blocks={blocks} number={i + 1} total={total} />
       ))}
     </div>
+  );
+
+  // Above the gutter, not in it: the gutter is always light, and the callout's
+  // dark colours are translucent, so its text would wash out there in dark mode.
+  const sheets = asksForMixedLayout(doc) ? (
+    <>
+      <div data-fancy-docs-layout-notice="" style={{ padding: "16px 16px 0" }}>
+        <Callout color="amber">{LAYOUT_NOTICE}</Callout>
+      </div>
+      {gutter}
+    </>
+  ) : (
+    gutter
   );
 
   if (!frame) return sheets;

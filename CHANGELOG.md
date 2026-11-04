@@ -9,6 +9,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+**What you must do: nothing.** A document with one page setup draws exactly as
+before, with no new element.
+
+### Added
+
+- **A visible notice when a document asks for mixed page layout** (mixed page
+  orientation, stage 1). `pageBreak.page`, page keys written straight on a break
+  (`pageBreak.orientation`, `.margins`, ...) and a top-level `sections` were silently
+  ignored, so a landscape section drew as portrait with nothing said. The document
+  still draws, one page setup as before, under a react-fancy `Callout`
+  (`data-fancy-docs-layout-notice`) in light and dark. New export: `LAYOUT_NOTICE`.
+  Per-page geometry comes in a later release; **consumer action:** none. Those
+  near-miss keys and `sections` do not exist: `pageBreak.page` is the form, and
+  `last-word` refuses all of them on write until it can honour the first.
+
 ## [0.2.1] - 2026-11-01
 
 ### Changed

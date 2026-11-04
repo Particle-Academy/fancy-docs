@@ -11,6 +11,9 @@ envelope's `RULES.md`; this file is about this repo's code.
 - `src/style.ts` — the writer's defaults (`DEFAULTS`, read off last-word's
   `docx-writer.ts` styles part, not guessed) and the CSS helpers.
 - `src/DocViewer.tsx` — pages, bands, blocks, tables.
+- `src/layout-notice.ts` — whether a Doc asks for page layout the viewer ignores
+  (`pageBreak.page`, near-miss keys, `sections`), and the notice's words. The notice
+  sits above the gutter, never in it: the gutter is always light.
 - `src/DocFileView.tsx` — the `registerOfficeViewer` adapter for fancy-code.
   Its props match fancy-code's `OfficeViewerProps` WITHOUT importing them.
 

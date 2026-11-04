@@ -1,5 +1,6 @@
 export { DocViewer } from "./DocViewer";
 export type { DocViewerProps } from "./DocViewer";
+export { LAYOUT_NOTICE } from "./layout-notice";
 export { DocFileView } from "./DocFileView";
 export type { DocFileViewProps } from "./DocFileView";
 export type {
