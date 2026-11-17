@@ -1,40 +1,68 @@
-# fancy-docs — agent guide
+# Using @particle-academy/fancy-docs — guide for agents
 
-Renders a **last-word `Doc`** (the JSON its PHP and JS readers return) the way
-Word renders it. Process rules (publishing, versions, backports) live in the
-envelope's `RULES.md`; this file is about this repo's code.
+How an agent installs and uses this package in a consumer app. What the package
+is, is in [README.md](./README.md). Notes for working ON this repo's code are in
+[CONTRIBUTING.md](./CONTRIBUTING.md).
 
-## What lives where
+## Install
 
-- `src/types.ts` — the Doc model, **structural**: no dependency on last-word.
-  Mirror its `schema/types.ts` when the model grows; do not import it.
-- `src/style.ts` — the writer's defaults (`DEFAULTS`, read off last-word's
-  `docx-writer.ts` styles part, not guessed) and the CSS helpers.
-- `src/DocViewer.tsx` — pages, bands, blocks, tables. A sheet per page break, each at
-  the page in force there: a `pageBreak` carrying `page` changes it from there on.
-- `src/layout-notice.ts` — whether a Doc sets page settings where they don't apply
-  (a nested `page`, near-miss keys, `sections`), and the notice's words. The notice
-  sits above the gutter, never in it: the gutter is always light.
-- `src/DocFileView.tsx` — the `registerOfficeViewer` adapter for fancy-code.
-  Its props match fancy-code's `OfficeViewerProps` WITHOUT importing them.
+```bash
+npm install @particle-academy/fancy-docs @particle-academy/react-fancy
+```
 
-## Invariants
+- **Peers:** `react` and `react-dom` 19, `@particle-academy/react-fancy`
+  `>=5.49.1 <7.0.0`. `@particle-academy/fancy-echarts` (`>=6.1.0 <7.0.0`) is
+  needed only when documents contain charts.
+- The document itself comes from `last-word`: read the `.docx` on the server with
+  PHP `particle-academy/last-word` (the preferred path), or in the browser with
+  `@particle-academy/last-word`'s `DocxReader`.
 
-- **Points stay points.** The model's unit is the point; CSS has `pt`. Do not
-  convert to px except for the frame's logical width.
-- **Word's single line is ~1.2 em** (`SINGLE_LINE`). A document's `lineHeight`
-  is a multiple of THAT, not of CSS's 1.0. Drop the factor and every paragraph
-  draws tighter than LibreOffice's render of the same file.
-- **Everything shown came out of a file.** Links through `sanitizeHref`; images
-  `data:` rasters only (a remote URL is a tracking pixel); colours `#RRGGBB`
-  only via `hex()`. A new style field that takes a string from the doc goes
-  through the same kind of gate.
-- **A header row with no fill of its own is `#E7E7E7`**, the grey the writer
-  and all three engines share.
+## Find it on the Fancy MCP server
 
-## Checking a change
+The catalog server is `https://ui.particle.academy/mcp` (streamable HTTP, no API
+key; MCP id `fancy-ui`). Registry entries for this package:
 
-`npm test` (vitest, jsdom). jsdom does not lay out, so for anything visual put a
-real `.docx` beside its LibreOffice render in a browser — the lab keeps both
-under `fancy-labs/storage/app/lab-artifacts/*/document-*.docx` and
-`.../rendered/document-*.pdf`.
+| Slug | What |
+|---|---|
+| `fancy-docs-doc-viewer` | A last-word Doc as Word renders it, framed (`DocViewer`). |
+| `doc-file-view` | The docx viewer for fancy-code's `FileViewer` (`registerOfficeViewer`). |
+
+Use `search-components` to find them by concept, `install-instructions` for the
+exact commands, `get-component` for the source. Vendored source instead of npm:
+`npx fancy-cli@latest add <slug>`.
+
+## API essentials
+
+```tsx
+import { DocViewer } from "@particle-academy/fancy-docs";
+
+<div className="h-[40rem]">
+  <DocViewer doc={doc} />
+</div>
+```
+
+- `doc` is the JSON last-word's readers return.
+- `frame={false}` gives the bare pages; `frameProps` reaches react-fancy's
+  `FauxClient` frame (zoom, full screen).
+- `DocFileView` plugs into fancy-code's `FileViewer`:
+
+  ```ts
+  import { registerOfficeViewer } from "@particle-academy/fancy-code";
+  import { DocFileView } from "@particle-academy/fancy-docs";
+  import { DocxReader } from "@particle-academy/last-word";
+
+  registerOfficeViewer("docx", DocFileView, { read: (bytes) => new DocxReader().read(bytes) });
+  ```
+
+- `LAYOUT_NOTICE` is exported: the viewer shows a notice when a Doc sets page
+  settings where they do not apply (a nested `page`, near-miss keys, `sections`).
+
+## Traps
+
+- **Charts need `@particle-academy/fancy-echarts`.** It is an optional peer;
+  install it if your documents have charts.
+- **Only safe content renders.** Images must be `data:` rasters (remote URLs are
+  dropped), links go through `sanitizeHref` (`javascript:` and `data:` dropped),
+  and colours must be `#RRGGBB`; anything else is ignored.
+- An unstyled document gets the writer's defaults (Calibri 11pt, 8pt after each
+  paragraph, Word's single-line height).
